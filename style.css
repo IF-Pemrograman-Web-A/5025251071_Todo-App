@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
 * {
     box-sizing: border-box;
     margin: 0;
@@ -15,14 +17,14 @@ body {
 
 /* Header & Footer */
 header {
-    background-color: #f891b9;
+    background-color: #c97d9a;
     color: white;
     text-align: center;
     padding: 1rem;
 }
 
 footer {
-    background-color: #f891b9;
+    background-color: #c97d9a;
     color: white;
     text-align: center;
     padding: 1rem;
@@ -78,7 +80,7 @@ input[type="text"], textarea, select {
 
 button {
     padding: 10px;
-    background-color: #ece286;
+    background-color: #ebe37b;
     color: white;
     border: none;
     border-radius: 4px;
@@ -86,16 +88,16 @@ button {
 }
 
 button:hover {
-    background-color: #a0995d;
+    background-color: #dcd575;
 }
 
 .btn-delete {
-    background-color: #7f3553;
+    background-color: #9e5371;
     color: white;
 }
 
 .btn-delete:hover {
-    background-color: #72294e;
+    background-color: #86465f;
 }
 
 /* Dummy Data List */
