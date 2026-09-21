@@ -15,7 +15,5 @@ Website To-do list untuk memanajemen tugas yang sudah dilengkapi dengan `script.
 <img width="442" height="592" alt="image" src="https://github.com/user-attachments/assets/6e9c51b2-17b5-456f-8806-85f2cf884619" />
 
 ### Link Deploy
-- First Deploy
 https://if-pemrograman-web-a.github.io/5025251071_Todo-App/
-- Second Deploy
-https://if-pemrograman-web-a.github.io/5025251071_Todo-App/
+
