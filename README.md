@@ -1,1 +1,7 @@
-<img width="1917" height="1016" alt="image" src="https://github.com/user-attachments/assets/70a24da8-fdc1-4c24-94d0-eaf7bbb0435d" />
+| NRP | Nama | Kelas |
+| --- | --- | :---: |
+| 5025251071 | Nasywa Zhafirah | A |
+## Description
+Website To-do list untuk memanajemen tugas yang sudah dilengkapi dengan servis worker.
+##Link Deploy
+https://if-pemrograman-web-a.github.io/5025251071_Todo-App/
