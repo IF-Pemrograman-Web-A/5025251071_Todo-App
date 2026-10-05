@@ -3,73 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Todo List Webpage</title>
+    <title>Piw's To-do List</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <header>
-        <h1>To-do List App</h1>
+    <header role="banner">
+        <h1>Piw's To-do List</h1>
+        <button id="theme-toggle-btn" aria-label="Beralih antara mode gelap dan terang">Dark Mode</button>
     </header>
 
-    <main class="container">
+    <main class="container" role="main">
         
-        <!-- Left panel: List -->
-        <section class="left-panel">
-            <h2>List Task</h2>
-            
-            <!-- Form for new todo -->
-            <form class="todo-form">
+        <section class="left-panel" aria-labelledby="heading-list">
+            <h2 id="heading-list">List Task</h2>
+
+            <form id="add-todo-form" class="todo-form">
                 <h3>New To-do</h3>
-                <input type="text" placeholder="Task title..." required>
-                <textarea placeholder="Description..."></textarea>
-                <button type="submit">Add</button>
+                
+                <label for="input-title">Judul Tugas:</label>
+                <input type="text" id="input-title" placeholder="Task title..." required aria-required="true">
+                
+                <label for="input-desc">Deskripsi:</label>
+                <textarea id="input-desc" placeholder="Description..."></textarea>
+
+                <label for="input-image">Gambar Tugas:</label>
+                <input type="file" id="input-image" accept="image/*" capture="environment" aria-label="Ambil atau unggah foto tugas">
+
+                <label for="input-notify-time">Waktu Notifikasi:</label>
+                <input type="datetime-local" id="input-notify-time" aria-label="Atur waktu notifikasi tugas">
+
+                <button type="submit" aria-label="Tambah tugas baru">Add</button>
             </form>
 
-            <!-- Static Todo List (Dummy Data) -->
-            <ul class="todo-list">
-                <li class="todo-item active">
-                    <h4>Tugas Pemrograman Web</h4>
-                    <p>Bikin website sederhana pake html dan css</p>
-                </li>
-                <li class="todo-item">
-                    <h4>Nyuci baju</h4>
-                </li>
-                <li class="todo-item">
-                    <h4>Beli keperluan yang abis</h4>
-                    <p>Sabun cuci baju, sunscreen</p>
-                </li>
+            <ul id="todo-list" class="todo-list" aria-label="Daftar tugas todo">
             </ul>
         </section>
 
         <!-- Right panel: Editor/detail Todo -->
-        <aside class="right-panel">
-            <h2>Detail Todo</h2>
-            <form class="editor-form">
+        <aside class="right-panel" aria-labelledby="heading-detail">
+            <h2 id="heading-detail">Detail Todo</h2>
+
+            <form id="edit-todo-form" class="editor-form">
+                
+                <input type="hidden" id="edit-id">
+
                 <label for="edit-title">Title:</label>
-                <input type="text" id="edit-title" value="Tugas Pemrograman Web">
+                <input type="text" id="edit-title">
 
                 <label for="edit-desc">Description:</label>
-                <textarea id="edit-desc" rows="5">Bikin website sederhana pake html dan css</textarea>
+                <textarea id="edit-desc" rows="4"></textarea>
 
                 <label for="edit-status">Status:</label>
                 <select id="edit-status">
-                    <option value="pending">Unfinished</option>
-                    <option value="pending">On progress</option>
-                    <option value="done">Done!</option>
+                    <option value="Unfinished">Unfinished</option>
+                    <option value="On progress">In progress</option>
+                    <option value="Done!">Done!</option>
                 </select>
 
-                <button type="button" class="btn-save">Yup, save!</button>
-                <button type="button" class="btn-delete">Delete</button>
+                <div class="editor-buttons">
+                    <button type="submit" class="btn-save" aria-label="Simpan perubahan tugas">Yes</button>
+                    <button type="button" id="btn-delete-editor" class="btn-delete" aria-label="Hapus tugas ini">Delete</button>
+                </div>
             </form>
         </aside>
 
     </main>
-
-    <!-- Footer -->
-    <footer>
+    <footer role="contentinfo">
         <p>&copy; 2026 Todo App - Nasywa Zhafirah</p>
     </footer>
 
+    <script src="script.js"></script>
 </body>
 </html>
