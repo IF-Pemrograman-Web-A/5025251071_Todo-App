@@ -126,6 +126,17 @@ button:hover {
     margin-bottom: 5px;
 }
 
+input:focus, select:focus, textarea:focus, button:focus {
+    outline: 2px solid var(--primary-pink);
+    outline-offset: 2px;
+}
+
+.todo-img-preview {
+    display: block;
+    margin-top: 8px;
+    border: 1px solid var(--border-soft);
+}
+
 /* Responsif */
 @media (max-width: 768px) {
     .container {
