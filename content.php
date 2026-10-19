@@ -40,7 +40,7 @@ if (isset($_POST['update_todo'])) {
     $status = mysqli_real_escape_string($conn, $_POST['status']);
 
     $notify_time = !empty($_POST['notify_time']) ? "'" . mysqli_real_escape_string($conn, $_POST['notify_time']) . "'" : "NULL";
-    
+
     $query = "UPDATE todos SET title='$title', description='$desc', status='$status', notify_time=$notify_time WHERE id=$id";
     mysqli_query($conn, $query);
     header("Location: index.php?category=" . $category);
@@ -135,7 +135,7 @@ $todos_result = mysqli_query($conn, "SELECT * FROM todos WHERE category = '$cate
                 <textarea id="edit-desc" name="description" rows="5"><?= htmlspecialchars($edit_data['description']) ?></textarea>
 
                 <!-- Input Deadline pada Form Edit -->
-                <label for="edit-notify">Deadline / Pengingat:</label>
+                <label for="edit-notify">Deadline:</label>
                 <?php 
                     $formatted_deadline = !empty($edit_data['notify_time']) ? date('Y-m-d\TH:i', strtotime($edit_data['notify_time'])) : '';
                 ?>
