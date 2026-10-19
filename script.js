@@ -13,12 +13,7 @@ if (themeToggleBtn) {
         const isDark = document.body.classList.contains("dark-mode");
         
         localStorage.setItem("theme", isDark ? "dark" : "light");
-        
-        if (isDark) {
-            themeToggleBtn.textContent = "Light Mode";
-        } else {
-            themeToggleBtn.textContent = "Dark Mode";
-        }
+        themeToggleBtn.textContent = isDark ? "Light Mode" : "Dark Mode";
     });
 }
 
@@ -36,27 +31,34 @@ function requestNotificationPermission() {
 }
 requestNotificationPermission();
 
-const addForm = document.querySelector(".todo-form");
-if (addForm) {
-    addForm.addEventListener("submit", function() {
-        const titleInput = document.getElementById("input-title") ? document.getElementById("input-title").value : "";
-        const notifyTimeInput = document.getElementById("input-notify-time") ? document.getElementById("input-notify-time").value : "";
-        
-        if (notifyTimeInput && 'serviceWorker' in navigator && Notification.permission === 'granted') {
-            const targetTime = new Date(notifyTimeInput).getTime();
+//Penjadwalan Notifikasi
+document.addEventListener('DOMContentLoaded', () => {
+    // Membaca semua todo-item dari database MySQL
+    const todoItems = document.querySelectorAll('.todo-item');
+
+    todoItems.forEach(item => {
+        const title = item.getAttribute('data-title');
+        const deadlineStr = item.getAttribute('data-deadline');
+
+        if (deadlineStr && 'serviceWorker' in navigator && Notification.permission === 'granted') {
+            const formattedDeadline = deadlineStr.replace(' ', 'T');
+            const targetTime = new Date(deadlineStr).getTime();
             const now = new Date().getTime();
             const delay = targetTime - now;
 
+            // Kirim pesan ke Service Worker jika deadline masih di masa depan
             if (delay > 0) {
                 navigator.serviceWorker.ready.then(registration => {
-                    registration.active.postMessage({
-                        type: 'SCHEDULE_NOTIFICATION',
-                        title: `🚨Reminder: ${titleInput}`,
-                        body: 'Oy kerjain tugasnyaaa!',
-                        delay: delay
-                    });
+                    if (registration.active) {
+                        registration.active.postMessage({
+                            type: 'SCHEDULE_NOTIFICATION',
+                            title: `🚨 Reminder: ${title}`,
+                            body: 'Oy kerjain tugasnyaaa!',
+                            delay: delay
+                        });
+                    }
                 });
             }
         }
     });
-}
+});

@@ -18,7 +18,7 @@ if (isset($_POST['add_todo'])) {
         move_uploaded_file($_FILES['image']['tmp_name'], 'uploads/' . $image_name);
     }
 
-    $query = "INSERT INTO todos (title, description, status, category, image) VALUES ('$title', '$desc', 'Unfinished', '$cat', '$image_name')";
+    $query = "INSERT INTO todos (title, description, status, category, image, notify_time) VALUES ('$title', '$desc', 'Unfinished', '$cat', '$image_name', $notify_time)";
     mysqli_query($conn, $query);
     header("Location: index.php?category=" . $cat);
     exit();
@@ -39,7 +39,9 @@ if (isset($_POST['update_todo'])) {
     $desc = mysqli_real_escape_string($conn, $_POST['description']);
     $status = mysqli_real_escape_string($conn, $_POST['status']);
 
-    $query = "UPDATE todos SET title='$title', description='$desc', status='$status' WHERE id=$id";
+    $notify_time = !empty($_POST['notify_time']) ? "'" . mysqli_real_escape_string($conn, $_POST['notify_time']) . "'" : "NULL";
+    
+    $query = "UPDATE todos SET title='$title', description='$desc', status='$status', notify_time=$notify_time WHERE id=$id";
     mysqli_query($conn, $query);
     header("Location: index.php?category=" . $category);
     exit();
@@ -78,11 +80,18 @@ $todos_result = mysqli_query($conn, "SELECT * FROM todos WHERE category = '$cate
         <ul class="todo-list">
             <?php while ($row = mysqli_fetch_assoc($todos_result)): ?>
                 <?php $isDone = ($row['status'] === 'Done!'); ?>
-                <li class="todo-item <?= $isDone ? 'completed' : '' ?>">
+                <li class="todo-item <?= $isDone ? 'completed' : '' ?>" data-deadline="<?= htmlspecialchars($row['notify_time'] ?? '') ?>" data-title="<?= htmlspecialchars($row['title']) ?>">
                     <div class="todo-content">
                         <h4><?= htmlspecialchars($row['title']) ?></h4>
                         <?php if (!empty($row['description'])): ?>
                             <p><?= htmlspecialchars($row['description']) ?></p>
+                        <?php endif; ?>
+
+                        <!-- Menampilkan Teks Deadline jika ada -->
+                        <?php if (!empty($row['notify_time'])): ?>
+                            <small style="color: var(--primary-pink); font-weight: bold; display: block; margin-top: 4px;">
+                                🚨Deadline: <?= date('d M Y, H:i', strtotime($row['notify_time'])) ?>
+                            </small>
                         <?php endif; ?>
                         
                         <!-- Tampilan gambar jika di-upload -->
@@ -124,6 +133,13 @@ $todos_result = mysqli_query($conn, "SELECT * FROM todos WHERE category = '$cate
 
                 <label for="edit-desc">Description:</label>
                 <textarea id="edit-desc" name="description" rows="5"><?= htmlspecialchars($edit_data['description']) ?></textarea>
+
+                <!-- Input Deadline pada Form Edit -->
+                <label for="edit-notify">Deadline / Pengingat:</label>
+                <?php 
+                    $formatted_deadline = !empty($edit_data['notify_time']) ? date('Y-m-d\TH:i', strtotime($edit_data['notify_time'])) : '';
+                ?>
+                <input type="datetime-local" id="edit-notify" name="notify_time" value="<?= $formatted_deadline ?>">
 
                 <label for="edit-status">Status:</label>
                 <select id="edit-status" name="status">

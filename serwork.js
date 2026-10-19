@@ -9,11 +9,13 @@ self.addEventListener('activate', (event) => {
 // Menangani permintaan Notifikasi
 self.addEventListener('message', (event) => {
     if (event.data && event.data.type === 'SCHEDULE_NOTIFICATION') {
-        const {title, body, delay} = event.data;
+        const { title, body, delay } = event.data;
+        
         setTimeout(() => {
             self.registration.showNotification(title, {
                 body: body,
-                icon: '[https://via.placeholder.com/128/e8a5a5/ffffff?text=Todo](https://via.placeholder.com/128/e8a5a5/ffffff?text=Todo)'
+                icon: 'https://via.placeholder.com/128/e8a5a5/ffffff?text=Todo',
+                vibrate: [200, 100, 200]
             });
         }, delay);
     }
