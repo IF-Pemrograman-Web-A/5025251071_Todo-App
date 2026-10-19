@@ -1,127 +1,62 @@
-let todos = [
-    { 
-        id: 1, 
-        title: "Tugas Pemrograman Web", 
-        desc: "Bikin website sederhana pake html dan css", 
-        status: "Unfinished" 
-    },
-    { 
-        id: 2, 
-        title: "Beli keperluan yang abis", 
-        desc: "Sabun cuci baju, sunscreen", 
-        status: "In progress" 
-    }
-];
-
-const todoListEl = document.getElementById("todo-list");
-const addFormEl = document.getElementById("add-todo-form");
-const editFormEl = document.getElementById("edit-todo-form");
-const btnDeleteEditor = document.getElementById("btn-delete-editor");
+// Dark Mode
 const themeToggleBtn = document.getElementById("theme-toggle-btn");
 
-function renderTodos() {
-    todoListEl.innerHTML = ""; 
+const savedTheme = localStorage.getItem("theme");
+if (savedTheme === "dark") {
+    document.body.classList.add("dark-mode");
+    if (themeToggleBtn) themeToggleBtn.textContent = "Light Mode";
+}
 
-    todos.forEach(todo => {
-        const li = document.createElement("li");
-        const isDone = todo.status === "Done!";
+if (themeToggleBtn) {
+    themeToggleBtn.addEventListener("click", function() {
+        document.body.classList.toggle("dark-mode");
+        const isDark = document.body.classList.contains("dark-mode");
         
-        li.className = `todo-item ${isDone ? 'completed' : ''}`;
+        localStorage.setItem("theme", isDark ? "dark" : "light");
         
-        li.innerHTML = `
-            <input type="checkbox" ${isDone ? 'checked' : ''} onchange="toggleCheckbox(${todo.id})">
-            <div class="todo-content">
-                <h4>${todo.title}</h4>
-                <p>${todo.desc}</p>
-                <small style="color: var(--text-muted); font-size: 0.85rem;">- Status: <b>${todo.status}</b></small>
-            </div>
-            <div class="todo-actions">
-                <button type="button" class="btn-edit" onclick="loadToEditor(${todo.id})">Edit</button>
-            </div>
-        `;
-
-        todoListEl.appendChild(li);
+        if (isDark) {
+            themeToggleBtn.textContent = "Light Mode";
+        } else {
+            themeToggleBtn.textContent = "Dark Mode";
+        }
     });
 }
 
-addFormEl.addEventListener("submit", function(event) {
-    event.preventDefault(); 
+// SW & Notification
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('serwork.js')
+        .then(() => console.log('Service Worker terdaftar!'))
+        .catch(err => console.error('Pendaftaran Service Worker gagal:', err));
+}
 
-    const titleInput = document.getElementById("input-title").value;
-    const descInput = document.getElementById("input-desc").value;
-
-    const newTodo = {
-        id: Date.now(), 
-        title: titleInput,
-        desc: descInput,
-        status: "Unfinished" 
-    };
-
-    todos.push(newTodo); 
-    renderTodos();       
-    addFormEl.reset();   
-});
-
-function loadToEditor(id) {
-    const todo = todos.find(t => t.id === id);
-    if (todo) {
-        document.getElementById("edit-id").value = todo.id;
-        document.getElementById("edit-title").value = todo.title;
-        document.getElementById("edit-desc").value = todo.desc;
-        document.getElementById("edit-status").value = todo.status;
+function requestNotificationPermission() {
+    if ('Notification' in window && Notification.permission !== 'granted') {
+        Notification.requestPermission();
     }
 }
+requestNotificationPermission();
 
-editFormEl.addEventListener("submit", function(event) {
-    event.preventDefault();
+const addForm = document.querySelector(".todo-form");
+if (addForm) {
+    addForm.addEventListener("submit", function() {
+        const titleInput = document.getElementById("input-title") ? document.getElementById("input-title").value : "";
+        const notifyTimeInput = document.getElementById("input-notify-time") ? document.getElementById("input-notify-time").value : "";
+        
+        if (notifyTimeInput && 'serviceWorker' in navigator && Notification.permission === 'granted') {
+            const targetTime = new Date(notifyTimeInput).getTime();
+            const now = new Date().getTime();
+            const delay = targetTime - now;
 
-    const id = Number(document.getElementById("edit-id").value);
-    if (!id) return; 
-
-    const title = document.getElementById("edit-title").value;
-    const desc = document.getElementById("edit-desc").value;
-    const status = document.getElementById("edit-status").value;
-
-    todos = todos.map(todo => {
-        if (todo.id === id) {
-            return { ...todo, title: title, desc: desc, status: status };
+            if (delay > 0) {
+                navigator.serviceWorker.ready.then(registration => {
+                    registration.active.postMessage({
+                        type: 'SCHEDULE_NOTIFICATION',
+                        title: `🚨Reminder: ${titleInput}`,
+                        body: 'Oy kerjain tugasnyaaa!',
+                        delay: delay
+                    });
+                });
+            }
         }
-        return todo;
     });
-
-    renderTodos();
-    editFormEl.reset();
-});
-
-btnDeleteEditor.addEventListener("click", function() {
-    const id = Number(document.getElementById("edit-id").value);
-    if (!id) return;
-
-    todos = todos.filter(todo => todo.id !== id);
-
-    renderTodos();
-    editFormEl.reset(); 
-});
-
-function toggleCheckbox(id) {
-    todos = todos.map(todo => {
-        if (todo.id === id) {
-            const newStatus = todo.status === "Done!" ? "Unfinished" : "Done!";
-            return { ...todo, status: newStatus };
-        }
-        return todo;
-    });
-    renderTodos();
 }
-
-themeToggleBtn.addEventListener("click", function() {
-    document.body.classList.toggle("dark-mode");
-    
-    if (document.body.classList.contains("dark-mode")) {
-        themeToggleBtn.textContent = "Light Mode";
-    } else {
-        themeToggleBtn.textContent = "Dark Mode";
-    }
-});
-
-renderTodos();
