@@ -62,9 +62,13 @@ $todos_result = mysqli_query($conn, "SELECT * FROM todos WHERE category = '$cate
             
             <input type="text" name="title" placeholder="Task title..." required>
             <textarea name="description" placeholder="Description..."></textarea>
+
+            <!-- Input Waktu Deadline -->
+            <label for="notify_time" style="color: var(--text-muted); font-weight: bold; font-size: 0.95rem;">Deadline:</label>
+            <input type="datetime-local" id="notify_time" name="notify_time">
             
             <!-- Input File -->
-            <label for="input-image" style="font-size: 0.9rem;">Foto/Gambar Tugas:</label>
+            <label for="input-image" style="font-size: 0.9rem;">Foto Tugas:</label>
             <input type="file" id="input-image" name="image" accept="image/*">
 
             <button type="submit" name="add_todo">Add</button>
