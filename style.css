@@ -150,7 +150,11 @@ label {
     font-weight: bold;
 }
 
-input[type="text"], input[type="file"], textarea, select {
+input[type="text"], 
+input[type="file"], 
+input[type="datetime-local"], 
+textarea, 
+select {
     background-color: var(--bg-main);
     color: var(--text-main);
     border: 1px solid var(--border-soft);
@@ -158,11 +162,25 @@ input[type="text"], input[type="file"], textarea, select {
     border-radius: 12px;
     outline: none;
     transition: all 0.2s;
+    width: 100%;
 }
 
-input[type="text"]:focus, textarea:focus, select:focus {
+input[type="text"]:focus, 
+input[type="datetime-local"]:focus, 
+textarea:focus, 
+select:focus {
     border-color: var(--primary-pink);
     background-color: #ffffff;
+}
+
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    filter: opacity(0.6);
+    transition: filter 0.2s;
+}
+
+input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover {
+    filter: opacity(1);
 }
 
 input[type="file"]::file-selector-button {
@@ -315,11 +333,16 @@ body.dark-mode .menu-list a.active {
 
 body.dark-mode input[type="text"],
 body.dark-mode input[type="file"],
+body.dark-mode input[type="datetime-local"],
 body.dark-mode textarea,
 body.dark-mode select {
     background-color: var(--bg-main) !important;
     color: var(--text-main) !important;
     border-color: var(--border-soft) !important;
+}
+
+body.dark-mode input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+    filter: invert(0.8);
 }
 
 body.dark-mode input[type="file"]::file-selector-button {
