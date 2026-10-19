@@ -3,8 +3,7 @@
 | 5025251071 | Nasywa Zhafirah | A |
 
 ## Description
-Website To-do list untuk memanajemen tugas yang sudah dilengkapi dengan `script.js` agar dapat digunakan oleh pengguna secara interaktif.
-
+Website To-do list final yang sudah dilengkapi dengan database structure `data.sql` dan implementasi PHP.
 ## Desktop Site 
 - Light Mode
 <img width="1917" height="886" alt="image" src="https://github.com/user-attachments/assets/a0c6734b-6694-4e5c-a9a2-35c216d75c3a" />
