@@ -1,16 +1,22 @@
 <?php
-// Menyambungkan koneksi database & mengambil kategori
+// Menyambungkan koneksi db & mengambil kategori
 include 'config.php';
 $category = isset($_GET['category']) && $_GET['category'] === 'Shared' ? 'Shared' : 'Personal';
 
-// Tambah To-do
+// Tambah todo
 if (isset($_POST['add_todo'])) {
     $title = mysqli_real_escape_string($conn, $_POST['title']);
     $desc = mysqli_real_escape_string($conn, $_POST['description']);
     $cat = mysqli_real_escape_string($conn, $_POST['category']);
     $image_name = NULL;
 
-    // Upload Gambar ke server PHP
+    if (!empty($_POST['notify_time'])) {
+        $notify_time = "'" . mysqli_real_escape_string($conn, $_POST['notify_time']) . "'";
+    } else {
+        $notify_time = "NULL"; 
+    }
+
+    // Upload gambar ke server PHP
     if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
         $ext = pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION);
         $image_name = time() . '_' . uniqid() . '.' . $ext;
@@ -24,7 +30,7 @@ if (isset($_POST['add_todo'])) {
     exit();
 }
 
-// Hapus To-do)
+// Hapus todo
 if (isset($_GET['delete'])) {
     $id = intval($_GET['delete']);
     mysqli_query($conn, "DELETE FROM todos WHERE id = $id");
@@ -32,7 +38,7 @@ if (isset($_GET['delete'])) {
     exit();
 }
 
-// Menyimpan Editan To-do
+// Menyimpan editan todo
 if (isset($_POST['update_todo'])) {
     $id = intval($_POST['id']);
     $title = mysqli_real_escape_string($conn, $_POST['title']);
@@ -47,7 +53,7 @@ if (isset($_POST['update_todo'])) {
     exit();
 }
 
-// Fetch data dari database sql
+// Fetch data dari db sql
 $todos_result = mysqli_query($conn, "SELECT * FROM todos WHERE category = '$category' ORDER BY id DESC");
 ?>
 
@@ -57,7 +63,7 @@ $todos_result = mysqli_query($conn, "SELECT * FROM todos WHERE category = '$cate
         <h2>List Task (<?= $category ?>)</h2>
         
         <!-- Form new todo -->
-        <!-- Method POST, enctype untuk file, & input category -->
+        <!-- Method POST, enctype untuk file, input kategori -->
         <form action="index.php?category=<?= $category ?>" method="POST" enctype="multipart/form-data" class="todo-form">
             <h3>New To-do</h3>
             <input type="hidden" name="category" value="<?= $category ?>">
@@ -65,18 +71,18 @@ $todos_result = mysqli_query($conn, "SELECT * FROM todos WHERE category = '$cate
             <input type="text" name="title" placeholder="Task title..." required>
             <textarea name="description" placeholder="Description..."></textarea>
 
-            <!-- Input Waktu Deadline -->
+            <!-- Input dl -->
             <label for="notify_time" style="color: var(--text-muted); font-weight: bold; font-size: 0.95rem;">Deadline:</label>
             <input type="datetime-local" id="notify_time" name="notify_time">
             
-            <!-- Input File -->
+            <!-- Input file -->
             <label for="input-image" style="font-size: 0.9rem;">Foto Tugas:</label>
             <input type="file" id="input-image" name="image" accept="image/*">
 
             <button type="submit" name="add_todo">Add</button>
         </form>
 
-        <!-- Dynamic Todo List dari Database MySQL -->
+        <!-- Dynamic Todo List dari db sql -->
         <ul class="todo-list">
             <?php while ($row = mysqli_fetch_assoc($todos_result)): ?>
                 <?php $isDone = ($row['status'] === 'Done!'); ?>
@@ -87,7 +93,7 @@ $todos_result = mysqli_query($conn, "SELECT * FROM todos WHERE category = '$cate
                             <p><?= htmlspecialchars($row['description']) ?></p>
                         <?php endif; ?>
 
-                        <!-- Menampilkan Teks Deadline jika ada -->
+                        <!-- Menampilkan dl -->
                         <?php if (!empty($row['notify_time'])): ?>
                             <small style="color: var(--primary-pink); font-weight: bold; display: block; margin-top: 4px;">
                                 🚨Deadline: <?= date('d M Y, H:i', strtotime($row['notify_time'])) ?>
@@ -103,7 +109,7 @@ $todos_result = mysqli_query($conn, "SELECT * FROM todos WHERE category = '$cate
                     </div>
                     
                     <div class="todo-actions">
-                        <!-- Tombol Edit & Delete interaktif via PHP -->
+                        <!-- Tombol edit & delete -->
                         <a href="index.php?category=<?= $category ?>&edit=<?= $row['id'] ?>" class="btn-edit">Edit</a>
                         <a href="index.php?category=<?= $category ?>&delete=<?= $row['id'] ?>" class="btn-delete" onclick="return confirm('Mau hapus tugasnya?')">Delete</a>
                     </div>

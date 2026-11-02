@@ -1,5 +1,5 @@
 <?php
-// Koneksi ke Database MySQL
+// Koneksi ke db sql
 $host = "localhost";
 $user = "root";
 $pass = "";

@@ -21,7 +21,7 @@ if (themeToggleBtn) {
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('serwork.js')
         .then(() => console.log('Service Worker terdaftar!'))
-        .catch(err => console.error('Pendaftaran Service Worker gagal:', err));
+        .catch(err => console.error('Duh, pendaftaran Service Worker gagal:', err));
 }
 
 function requestNotificationPermission() {
@@ -33,7 +33,17 @@ requestNotificationPermission();
 
 //Penjadwalan Notifikasi
 document.addEventListener('DOMContentLoaded', () => {
-    // Membaca semua todo-item dari database MySQL
+    if ('Notification' in window) {
+        if (Notification.permission === 'default') {
+            Notification.requestPermission().then(permission => {
+                if (permission === 'granted') {
+                    console.log('Izin notifikasi diberikan!');
+                }
+            });
+        }
+    }
+    
+    // Membaca semua todo-item dari db sql
     const todoItems = document.querySelectorAll('.todo-item');
 
     todoItems.forEach(item => {
@@ -44,21 +54,61 @@ document.addEventListener('DOMContentLoaded', () => {
             const formattedDeadline = deadlineStr.replace(' ', 'T');
             const targetTime = new Date(deadlineStr).getTime();
             const now = new Date().getTime();
-            const delay = targetTime - now;
 
-            // Kirim pesan ke Service Worker jika deadline masih di masa depan
-            if (delay > 0) {
-                navigator.serviceWorker.ready.then(registration => {
-                    if (registration.active) {
-                        registration.active.postMessage({
-                            type: 'SCHEDULE_NOTIFICATION',
-                            title: `🚨 Reminder: ${title}`,
-                            body: 'Oy kerjain tugasnyaaa!',
-                            delay: delay
-                        });
-                    }
-                });
-            }
+            // Waktu untuk notifikasi pengingat dl (3 jam sebelum dl) 
+            const MINUTES_BEFORE = 180; 
+            const warningTime = targetTime - (MINUTES_BEFORE * 60 * 1000);
+
+            const delayWarning = warningTime - now; // Delay pengingat awal
+            const delayExact = targetTime - now;     // Delay saat deadline tepat tiba
+
+            navigator.serviceWorker.ready.then(registration => {
+                if (!registration.active) return;
+
+            // Reminder sebelum dl
+            if (delayWarning > 0) {
+                    registration.active.postMessage({
+                        type: 'SCHEDULE_NOTIFICATION',
+                        title: `🚨Reminder (3 Hours Left): ${title}`,
+                        body: `Oy kerjain tugasnyaaa!!`,
+                        delay: delayWarning
+                    });
+                }
+
+            // Reminder udah waktunya dl
+            if (delayExact > 0) {
+                    registration.active.postMessage({
+                        type: 'SCHEDULE_NOTIFICATION',
+                        title: `🚨Deadline ${title}`,
+                        body: `Kumpulin sekarang! "${title}".`,
+                        delay: delayExact
+                    });
+                }
+            });    
         }
     });
 });
+
+let deferredPrompt;
+const installBtn = document.getElementById('btn-install');
+
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    if (installBtn) installBtn.style.display = 'block';
+});
+
+if (installBtn) {
+    installBtn.addEventListener('click', () => {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then((choiceResult) => {
+                if (choiceResult.outcome === 'accepted') {
+                    console.log('User menerima instalasi PWA!');
+                }
+                deferredPrompt = null;
+                installBtn.style.display = 'none';
+            });
+        }
+    });
+}

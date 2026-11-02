@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Sacramento&display=swap');
 
 :root {
     --bg-main: #fbf3ea;
@@ -14,7 +14,7 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    font-family: 'Poppins', sans-serif;
+    font-family: 'Gaegu', cursive, sans-serif;
     font-size: 1.05rem;
 }
 
@@ -36,7 +36,7 @@ header {
 }
 
 header h1 {
-    font-family: 'Poppins', cursive;
+    font-family: 'Gaegu', cursive;
     font-size: 2.5rem;
     color: var(--text-main);
     font-weight: normal;
@@ -190,7 +190,7 @@ input[type="file"]::file-selector-button {
     padding: 6px 14px;
     border-radius: 18px;
     cursor: pointer;
-    font-family: 'Poppins', cursive, sans-serif;
+    font-family: 'Gaegu', cursive, sans-serif;
     font-size: 1rem;
     margin-right: 12px;
     transition: background-color 0.2s, transform 0.1s;
