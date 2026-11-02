@@ -3,7 +3,7 @@
 | 5025251071 | Nasywa Zhafirah | A |
 
 ## Description
-Aplikasi To-do list berbasis web yang dilengkapi dengan `PHP, MySQL, dan JavaScript`. Diintegrasikan menggunakan fitur Progressive Web app (PWA) yang memungkinkan aplikasi untuk diinstal serta dapat dibuka saat offline (dengan Cache Storage) dan notifikasi pengingat deadline tugas.
+Aplikasi To-do list berbasis web yang dilengkapi dengan `PHP, MySQL, dan JavaScript`. Diintegrasikan menggunakan fitur Progressive Web App (PWA) yang memungkinkan aplikasi untuk diinstal serta dapat dibuka saat offline (dengan Cache Storage) dan notifikasi pengingat deadline tugas.
 ## Desktop Site 
 - Light Mode (web with install button)
 <img width="1600" height="900" alt="image" src="https://github.com/user-attachments/assets/8484b6c8-3253-4f2c-ac52-bac0544c3202" />
