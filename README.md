@@ -3,23 +3,33 @@
 | 5025251071 | Nasywa Zhafirah | A |
 
 ## Description
-Website To-do list final yang sudah dilengkapi dengan database structure `data.sql` dan implementasi PHP.
+Aplikasi To-do list berbasis web yang dilengkapi dengan `PHP, MySQL, dan JavaScript`. Diintegrasikan menggunakan fitur Progressive Web app (PWA) yang memungkinkan aplikasi untuk diinstal serta dapat dibuka saat offline (dengan Cache Storage) dan notifikasi pengingat deadline tugas.
 ## Desktop Site 
-- Light Mode
-<img width="1917" height="886" alt="image" src="https://github.com/user-attachments/assets/a0c6734b-6694-4e5c-a9a2-35c216d75c3a" />
-<img width="1917" height="563" alt="image" src="https://github.com/user-attachments/assets/df1ef3bd-0399-4b19-8de2-d2764030ca5a" />
+- Light Mode (web with install button)
+<img width="1600" height="900" alt="image" src="https://github.com/user-attachments/assets/8484b6c8-3253-4f2c-ac52-bac0544c3202" />
+    
+- Dark Mode (application)
+<img width="1600" height="900" alt="image" src="https://github.com/user-attachments/assets/a7685ea7-18cc-4a7e-8ecc-7cc47d9d0b51" />
 
-- Dark Mode
-<img width="1917" height="890" alt="image" src="https://github.com/user-attachments/assets/63e1f475-aca4-4ccf-bc3b-50daec083b28" />
-<img width="1917" height="557" alt="image" src="https://github.com/user-attachments/assets/de33119c-918b-4e11-986f-c7d81baef205" />
-
-## Mobile Site (Dark Mode)
-<img width="720" height="1442" alt="image" src="https://github.com/user-attachments/assets/45f4986d-fcea-4b76-9fde-50a1e7b2d3d8" />
-<img width="720" height="1369" alt="image" src="https://github.com/user-attachments/assets/e3a82036-5259-4d37-97fa-21b9c6f9fdba" />
-<img width="720" height="551" alt="image" src="https://github.com/user-attachments/assets/88837bec-1952-4b6c-82ed-141e58742338" />
+## Icon
+<img width="135" height="145" alt="image" src="https://github.com/user-attachments/assets/69f8033e-dcdc-473f-a3dc-974fc16fcda3" />
 
 ## Notification
-<img width="467" height="173" alt="image" src="https://github.com/user-attachments/assets/6955bc96-f4a9-43c6-98df-568220ea409e" />
+- 3 hours left before the deadline
+<img width="1600" height="899" alt="image" src="https://github.com/user-attachments/assets/8a5f1378-08ac-4cf8-8eba-9e55446bdc85" />
 
-### Link Websiite
-http://localhost/5025251071_Todo-App/
+- Right on the deadline
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/3a86a955-5429-454b-ae3a-05744c45dc81" />
+
+## DevTools
+- Manifest
+<img width="1916" height="856" alt="Screenshot 2026-11-02 171625" src="https://github.com/user-attachments/assets/4a1c4886-ec0b-4c90-a5ab-bd728fb3c855" />
+<img width="1917" height="847" alt="Screenshot 2026-11-02 171647" src="https://github.com/user-attachments/assets/cfdf3402-d761-4661-bd56-0840986c5739" />
+
+- Cache Storage
+<img width="1920" height="1080" alt="Screenshot (863)" src="https://github.com/user-attachments/assets/7204030a-c8e4-4eae-b7e2-470ce4667145" />
+
+- Network Offline
+<img width="1920" height="1080" alt="Screenshot (864)" src="https://github.com/user-attachments/assets/4c989a56-2833-49e7-91f5-b6b15d5f1f4f" />
+
+
