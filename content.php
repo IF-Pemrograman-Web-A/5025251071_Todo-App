@@ -9,7 +9,7 @@
                 <option value="Personal">Personal</option>
                 <option value="Shared">Shared</option>
             </select>
-            <input type="datetime-local" id="todo-deadline" title="Waktu Deadline">
+            <input type="datetime-local" id="todo-notify" title="Waktu Pengingat">
             <button type="submit" class="btn-add">Add</button>
         </div>
     </form>

@@ -68,10 +68,10 @@ function scheduleTodoNotifications(todos) {
         if (!registration.active) return;
 
         todos.forEach(todo => {
-            // Lewati jika sudah selesai atau tidak ada waktu deadline
-            if (todo.is_done == 1 || !todo.deadline) return;
+            // Lewati jika sudah Done atau tidak ada waktu deadline
+            if (todo.status === 'Done!' || !todo.notify_time) return;
 
-            const formattedDeadline = todo.deadline.replace(' ', 'T');
+            const formattedDeadline = todo.notify_time.replace(' ', 'T');
             const targetTime = new Date(formattedDeadline).getTime();
             const now = new Date().getTime();
 
@@ -143,24 +143,26 @@ async function loadTodos() {
 function renderTodos(todos) {
     const listContainer = document.getElementById('todo-list');
     if (!todos || todos.length === 0) {
-        listContainer.innerHTML = `<p class="empty-text">Belum ada catatan di kategori ini 🐻</p>`;
+        listContainer.innerHTML = `<p class="empty-text">Belum ada daftar tugas🙌🏻</p>`;
         return;
     }
 
     listContainer.innerHTML = todos.map(todo => `
-        <div class="todo-item ${todo.is_done == 1 ? 'completed' : ''}" data-id="${todo.id}" data-title="${escapeHTML(todo.title)}" data-deadline="${escapeHTML(todo.deadline || '')}">
+        <div class="todo-item ${todo.status === 'Done' ? 'completed' : ''}" data-id="${todo.id}" data-title="${escapeHTML(todo.title)}" data-notify="${escapeHTML(todo.notify_time || '')}">
             <div class="todo-content">
                 <div class="todo-header">
                     <span class="badge badge-${todo.category.toLowerCase()}">${escapeHTML(todo.category)}</span>
                     <h3>${escapeHTML(todo.title)}</h3>
                 </div>
                 ${todo.description ? `<p>${escapeHTML(todo.description)}</p>` : ''}
-                ${todo.deadline ? `<small>⏰ ${escapeHTML(todo.deadline)}</small>` : ''}
+                ${todo.notify_time ? `<small>⏰ ${escapeHTML(todo.notify_time)}</small>` : ''}
             </div>
             <div class="todo-actions">
-                <button onclick="toggleTodo(${todo.id}, ${todo.is_done == 1 ? 0 : 1})" title="Tandai Selesai">
-                    ${todo.is_done == 1 ? '↩️' : '✅'}
-                </button>
+                <select onchange="changeStatus(${todo.id}, this.value)" title="Ubah Status">
+                    <option value="Unfinished" ${todo.status === 'Unfinished' ? 'selected' : ''}>Unfinished</option>
+                    <option value="In Progress" ${todo.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+                    <option value="Done" ${todo.status === 'Done' ? 'selected' : ''}>Done!</option>
+                </select>
                 <button onclick="editTodo(${todo.id}, '${escapeHTML(todo.title)}', '${escapeHTML(todo.description || '')}')" title="Edit">
                     ✏️
                 </button>
@@ -180,7 +182,7 @@ document.getElementById('todo-form')?.addEventListener('submit', async (e) => {
         title: document.getElementById('todo-title').value,
         description: document.getElementById('todo-desc').value,
         category: document.getElementById('todo-category').value,
-        deadline: document.getElementById('todo-deadline')?.value || document.getElementById('todo-notify')?.value || null
+        notify_time: document.getElementById('todo-notify').value || null
     };
 
     try {
@@ -203,13 +205,13 @@ document.getElementById('todo-form')?.addEventListener('submit', async (e) => {
     }
 });
 
-// PATCH: Ubah status selesai/belum
-async function toggleTodo(id, newStatus) {
+// PATCH: Ubah status (Unfinished / In Progress / Done)
+async function changeStatus(id, newStatus) {
     try {
         const res = await fetch(`${API_URL}?id=${id}`, {
             method: 'PATCH',
             headers: apiHeaders,
-            body: JSON.stringify({ is_done: newStatus })
+            body: JSON.stringify({ status: newStatus })
         });
         if (res.ok) loadTodos();
     } catch (err) {
@@ -245,7 +247,7 @@ async function editTodo(id, oldTitle, oldDesc) {
 
 // DELETE: Hapus tugas
 async function deleteTodo(id) {
-    if (!confirm('Yakin ingin menghapus catatan ini?')) return;
+    if (!confirm('Yakin mau hapus?')) return;
 
     try {
         const res = await fetch(`${API_URL}?id=${id}`, {

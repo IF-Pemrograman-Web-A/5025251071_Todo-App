@@ -20,7 +20,7 @@ if (!$conn) {
 }
 
 // Implementasi Autentikasi Sederhana via API Key
-$VALID_API_KEY = "Piw's Todo App"; // Ubah sesuai keinginanmu
+$VALID_API_KEY = "Piw's Todo App";
 $headers = getallheaders();
 $client_key = $headers['X-API-KEY'] ?? $headers['x-api-key'] ?? '';
 
@@ -36,6 +36,8 @@ if ($client_key !== $VALID_API_KEY) {
 $method = $_SERVER['REQUEST_METHOD'];
 $id     = isset($_GET['id']) ? intval($_GET['id']) : null;
 $input  = json_decode(file_get_contents("php://input"), true);
+
+$allowed_statuses = ['Unfinished', 'In Progress', 'Done!'];
 
 switch ($method) {
     // GET: Ambil semua tugas atau detail 1 tugas berdasarkan ID
@@ -56,8 +58,6 @@ switch ($method) {
         } else {
             $category = $_GET['category'] ?? null;
             if ($category && in_array($category, ['Personal', 'Shared'])) {
-                $stmt = $conn->prepare("SELECT * FROM todos ORDER BY id DESC WHERE category = ?");
-                // Perbaikan urutan SQL: WHERE sebelum ORDER BY
                 $stmt = $conn->prepare("SELECT * FROM todos WHERE category = ? ORDER BY id DESC");
                 $stmt->bind_param("s", $category);
                 $stmt->execute();
@@ -88,11 +88,12 @@ switch ($method) {
 
         $title       = trim($input['title']);
         $description = trim($input['description'] ?? '');
+        $status      = isset($input['status']) && in_array($input['status'], $allowed_statuses) ? $input['status'] : 'Unfinished';
         $category    = in_array($input['category'] ?? '', ['Personal', 'Shared']) ? $input['category'] : 'Personal';
-        $deadline    = !empty($input['deadline']) ? $input['deadline'] : null;
+        $notify_time = !empty($input['notify_time']) ? $input['notify_time'] : null;
 
-        $stmt = $conn->prepare("INSERT INTO todos (title, description, category, deadline) VALUES (?, ?, ?, ?)");
-        $stmt->bind_param("ssss", $title, $description, $category, $deadline);
+        $stmt = $conn->prepare("INSERT INTO todos (title, description, status, category, notify_time) VALUES (?, ?, ?, ?, ?)");
+        $stmt->bind_param("sssss", $title, $description, $status, $category, $notify_time);
 
         if ($stmt->execute()) {
             http_response_code(201);
@@ -103,8 +104,9 @@ switch ($method) {
                     "id" => $stmt->insert_id,
                     "title" => $title,
                     "description" => $description,
+                    "status" => $status,
                     "category" => $category,
-                    "deadline" => $deadline
+                    "notify_time" => $notify_time
                 ]
             ]);
         } else {
@@ -113,7 +115,7 @@ switch ($method) {
         }
         break;
 
-    // PUT / PATCH: Update tugas atau ubah status selesai
+    // PUT / PATCH: Update tugas atau ubah status
     case 'PUT':
     case 'PATCH':
         if ($id === null) {
@@ -143,9 +145,9 @@ switch ($method) {
         // Gabung data lama dengan field baru yang dikirim (mendukung PATCH parsial & PUT penuh)
         $title       = isset($input['title']) ? trim($input['title']) : $existing['title'];
         $description = isset($input['description']) ? trim($input['description']) : $existing['description'];
+        $status      = isset($input['status']) && in_array($input['status'], $allowed_statuses) ? $input['status'] : $existing['status'];
         $category    = isset($input['category']) && in_array($input['category'], ['Personal', 'Shared']) ? $input['category'] : $existing['category'];
-        $is_done     = isset($input['is_done']) ? intval($input['is_done']) : ($existing['is_done'] ?? 0);
-        $deadline    = isset($input['deadline']) ? $input['deadline'] : ($existing['deadline'] ?? null);
+        $notify_time = array_key_exists('notify_time', $input) ? $input['notify_time'] : $existing['notify_time'];
 
         if (empty($title)) {
             http_response_code(400);
@@ -153,8 +155,8 @@ switch ($method) {
             exit();
         }
 
-        $stmt = $conn->prepare("UPDATE todos SET title = ?, description = ?, category = ?, is_done = ?, deadline = ? WHERE id = ?");
-        $stmt->bind_param("sssisi", $title, $description, $category, $is_done, $id);
+        $stmt = $conn->prepare("UPDATE todos SET title = ?, description = ?, status = ?, category = ?, notify_time = ? WHERE id = ?");
+        $stmt->bind_param("sssssi", $title, $description, $status, $category, $notify_time, $id);
 
         if ($stmt->execute()) {
             http_response_code(200);
@@ -165,8 +167,9 @@ switch ($method) {
                     "id" => $id,
                     "title" => $title,
                     "description" => $description,
+                    "status" => $status,
                     "category" => $category,
-                    "is_done" => $is_done
+                    "notify_time" => $notify_time
                 ]
             ]);
         } else {
