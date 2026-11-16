@@ -21,5 +21,10 @@ Website To-do list final yang sudah dilengkapi dengan database structure `data.s
 ## Notification
 <img width="467" height="173" alt="image" src="https://github.com/user-attachments/assets/6955bc96-f4a9-43c6-98df-568220ea409e" />
 
+## REST API Test (api.php`)
+<img width="1667" height="332" alt="image" src="https://github.com/user-attachments/assets/984c1644-3277-40f1-b62f-f75c1ab4305a" />
+<img width="1401" height="328" alt="image" src="https://github.com/user-attachments/assets/743a1894-104b-4666-bfba-afb787703316" />
+<img width="678" height="312" alt="image" src="https://github.com/user-attachments/assets/6a8eb955-2da3-4bb3-ab73-eadd11dc796f" />
+
 ### Link Websiite
 http://localhost/5025251071_Todo-App/
