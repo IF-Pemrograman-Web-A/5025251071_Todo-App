@@ -89,10 +89,10 @@ switch ($method) {
         $title       = trim($input['title']);
         $description = trim($input['description'] ?? '');
         $category    = in_array($input['category'] ?? '', ['Personal', 'Shared']) ? $input['category'] : 'Personal';
-        $notify_time = !empty($input['notify_time']) ? $input['notify_time'] : null;
+        $deadline    = !empty($input['deadline']) ? $input['deadline'] : null;
 
-        $stmt = $conn->prepare("INSERT INTO todos (title, description, category, notify_time) VALUES (?, ?, ?, ?)");
-        $stmt->bind_param("ssss", $title, $description, $category, $notify_time);
+        $stmt = $conn->prepare("INSERT INTO todos (title, description, category, deadline) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param("ssss", $title, $description, $category, $deadline);
 
         if ($stmt->execute()) {
             http_response_code(201);
@@ -104,7 +104,7 @@ switch ($method) {
                     "title" => $title,
                     "description" => $description,
                     "category" => $category,
-                    "notify_time" => $notify_time
+                    "deadline" => $deadline
                 ]
             ]);
         } else {
@@ -145,6 +145,7 @@ switch ($method) {
         $description = isset($input['description']) ? trim($input['description']) : $existing['description'];
         $category    = isset($input['category']) && in_array($input['category'], ['Personal', 'Shared']) ? $input['category'] : $existing['category'];
         $is_done     = isset($input['is_done']) ? intval($input['is_done']) : ($existing['is_done'] ?? 0);
+        $deadline    = isset($input['deadline']) ? $input['deadline'] : ($existing['deadline'] ?? null);
 
         if (empty($title)) {
             http_response_code(400);
@@ -152,8 +153,8 @@ switch ($method) {
             exit();
         }
 
-        $stmt = $conn->prepare("UPDATE todos SET title = ?, description = ?, category = ?, is_done = ? WHERE id = ?");
-        $stmt->bind_param("sssii", $title, $description, $category, $is_done, $id);
+        $stmt = $conn->prepare("UPDATE todos SET title = ?, description = ?, category = ?, is_done = ?, deadline = ? WHERE id = ?");
+        $stmt->bind_param("sssisi", $title, $description, $category, $is_done, $id);
 
         if ($stmt->execute()) {
             http_response_code(200);

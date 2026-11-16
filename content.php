@@ -1,166 +1,21 @@
-<?php
-// Menyambungkan koneksi db & mengambil kategori
-include 'config.php';
-$category = isset($_GET['category']) && $_GET['category'] === 'Shared' ? 'Shared' : 'Personal';
-
-// Tambah todo
-if (isset($_POST['add_todo'])) {
-    $title = mysqli_real_escape_string($conn, $_POST['title']);
-    $desc = mysqli_real_escape_string($conn, $_POST['description']);
-    $cat = mysqli_real_escape_string($conn, $_POST['category']);
-    $image_name = NULL;
-
-    if (!empty($_POST['notify_time'])) {
-        $notify_time = "'" . mysqli_real_escape_string($conn, $_POST['notify_time']) . "'";
-    } else {
-        $notify_time = "NULL"; 
-    }
-
-    // Upload gambar ke server PHP
-    if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
-        $ext = pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION);
-        $image_name = time() . '_' . uniqid() . '.' . $ext;
-        if (!is_dir('uploads')) { mkdir('uploads', 0777, true); }
-        move_uploaded_file($_FILES['image']['tmp_name'], 'uploads/' . $image_name);
-    }
-
-    $query = "INSERT INTO todos (title, description, status, category, image, notify_time) VALUES ('$title', '$desc', 'Unfinished', '$cat', '$image_name', $notify_time)";
-    mysqli_query($conn, $query);
-    header("Location: index.php?category=" . $cat);
-    exit();
-}
-
-// Hapus todo
-if (isset($_GET['delete'])) {
-    $id = intval($_GET['delete']);
-    mysqli_query($conn, "DELETE FROM todos WHERE id = $id");
-    header("Location: index.php?category=" . $category);
-    exit();
-}
-
-// Menyimpan editan todo
-if (isset($_POST['update_todo'])) {
-    $id = intval($_POST['id']);
-    $title = mysqli_real_escape_string($conn, $_POST['title']);
-    $desc = mysqli_real_escape_string($conn, $_POST['description']);
-    $status = mysqli_real_escape_string($conn, $_POST['status']);
-
-    $notify_time = !empty($_POST['notify_time']) ? "'" . mysqli_real_escape_string($conn, $_POST['notify_time']) . "'" : "NULL";
-
-    $query = "UPDATE todos SET title='$title', description='$desc', status='$status', notify_time=$notify_time WHERE id=$id";
-    mysqli_query($conn, $query);
-    header("Location: index.php?category=" . $category);
-    exit();
-}
-
-// Fetch data dari db sql
-$todos_result = mysqli_query($conn, "SELECT * FROM todos WHERE category = '$category' ORDER BY id DESC");
-?>
-
-<div class="content-wrapper">
-    <!-- Left panel: List -->
-    <section class="left-panel">
-        <h2>List Task (<?= $category ?>)</h2>
+<div class="memo-container">
+    <!-- Form Tambah Tugas -->
+    <form id="todo-form" class="todo-form">
+        <input type="text" id="todo-title" placeholder="Title..." required>
+        <textarea id="todo-desc" placeholder="Description..." rows="2"></textarea>
         
-        <!-- Form new todo -->
-        <!-- Method POST, enctype untuk file, input kategori -->
-        <form action="index.php?category=<?= $category ?>" method="POST" enctype="multipart/form-data" class="todo-form">
-            <h3>New To-do</h3>
-            <input type="hidden" name="category" value="<?= $category ?>">
-            
-            <input type="text" name="title" placeholder="Task title..." required>
-            <textarea name="description" placeholder="Description..."></textarea>
+        <div class="form-row">
+            <select id="todo-category">
+                <option value="Personal">Personal</option>
+                <option value="Shared">Shared</option>
+            </select>
+            <input type="datetime-local" id="todo-deadline" title="Waktu Deadline">
+            <button type="submit" class="btn-add">Add</button>
+        </div>
+    </form>
 
-            <!-- Input dl -->
-            <label for="notify_time" style="color: var(--text-muted); font-weight: bold; font-size: 0.95rem;">Deadline:</label>
-            <input type="datetime-local" id="notify_time" name="notify_time">
-            
-            <!-- Input file -->
-            <label for="input-image" style="font-size: 0.9rem;">Foto Tugas:</label>
-            <input type="file" id="input-image" name="image" accept="image/*">
-
-            <button type="submit" name="add_todo">Add</button>
-        </form>
-
-        <!-- Dynamic Todo List dari db sql -->
-        <ul class="todo-list">
-            <?php while ($row = mysqli_fetch_assoc($todos_result)): ?>
-                <?php $isDone = ($row['status'] === 'Done!'); ?>
-                <li class="todo-item <?= $isDone ? 'completed' : '' ?>" data-deadline="<?= htmlspecialchars($row['notify_time'] ?? '') ?>" data-title="<?= htmlspecialchars($row['title']) ?>">
-                    <div class="todo-content">
-                        <h4><?= htmlspecialchars($row['title']) ?></h4>
-                        <?php if (!empty($row['description'])): ?>
-                            <p><?= htmlspecialchars($row['description']) ?></p>
-                        <?php endif; ?>
-
-                        <!-- Menampilkan dl -->
-                        <?php if (!empty($row['notify_time'])): ?>
-                            <small style="color: var(--primary-pink); font-weight: bold; display: block; margin-top: 4px;">
-                                🚨Deadline: <?= date('d M Y, H:i', strtotime($row['notify_time'])) ?>
-                            </small>
-                        <?php endif; ?>
-                        
-                        <!-- Tampilan gambar jika di-upload -->
-                        <?php if ($row['image']): ?>
-                            <img src="uploads/<?= $row['image'] ?>" alt="Lampiran" style="max-width:80px; border-radius:8px; margin-top:8px; display:block;">
-                        <?php endif; ?>
-                        
-                        <small style="color: var(--text-muted); font-size: 0.85rem;">- Status: <b><?= htmlspecialchars($row['status']) ?></b></small>
-                    </div>
-                    
-                    <div class="todo-actions">
-                        <!-- Tombol edit & delete -->
-                        <a href="index.php?category=<?= $category ?>&edit=<?= $row['id'] ?>" class="btn-edit">Edit</a>
-                        <a href="index.php?category=<?= $category ?>&delete=<?= $row['id'] ?>" class="btn-delete" onclick="return confirm('Mau hapus tugasnya?')">Delete</a>
-                    </div>
-                </li>
-            <?php endwhile; ?>
-        </ul>
-    </section>
-
-    <!-- Right panel: Editor/detail Todo -->
-    <?php
-    $edit_data = null;
-    if (isset($_GET['edit'])) {
-        $edit_id = intval($_GET['edit']);
-        $res = mysqli_query($conn, "SELECT * FROM todos WHERE id = $edit_id");
-        $edit_data = mysqli_fetch_assoc($res);
-    }
-    ?>
-    <aside class="right-panel">
-        <h2>Detail Todo</h2>
-        <?php if ($edit_data): ?>
-            <!-- Form terhubung ke PHP Update -->
-            <form action="index.php?category=<?= $category ?>" method="POST" class="editor-form">
-                <input type="hidden" name="id" value="<?= $edit_data['id'] ?>">
-
-                <label for="edit-title">Title:</label>
-                <input type="text" id="edit-title" name="title" value="<?= htmlspecialchars($edit_data['title']) ?>" required>
-
-                <label for="edit-desc">Description:</label>
-                <textarea id="edit-desc" name="description" rows="5"><?= htmlspecialchars($edit_data['description']) ?></textarea>
-
-                <!-- Input Deadline pada Form Edit -->
-                <label for="edit-notify">Deadline:</label>
-                <?php 
-                    $formatted_deadline = !empty($edit_data['notify_time']) ? date('Y-m-d\TH:i', strtotime($edit_data['notify_time'])) : '';
-                ?>
-                <input type="datetime-local" id="edit-notify" name="notify_time" value="<?= $formatted_deadline ?>">
-
-                <label for="edit-status">Status:</label>
-                <select id="edit-status" name="status">
-                    <option value="Unfinished" <?= $edit_data['status'] === 'Unfinished' ? 'selected' : '' ?>>Unfinished</option>
-                    <option value="In progress" <?= $edit_data['status'] === 'On progress' ? 'selected' : '' ?>>In progress</option>
-                    <option value="Done!" <?= $edit_data['status'] === 'Done!' ? 'selected' : '' ?>>Done!</option>
-                </select>
-
-                <div class="editor-buttons" style="display: flex; gap: 10px; margin-top: 10px;">
-                    <button type="submit" name="update_todo" class="btn-save" style="flex: 1;">Yup, save!</button>
-                    <a href="index.php?category=<?= $category ?>&delete=<?= $edit_data['id'] ?>" class="btn-delete" style="flex: 1; text-align: center; text-decoration: none; line-height: 2.2;" onclick="return confirm('Mau hapus tugasnya?')">Delete</a>
-                </div>
-            </form>
-        <?php else: ?>
-            <p style="color: var(--text-muted);">Pilih tugasnya trus <b>Edit</b> buat lihat atau ubah detail!</p>
-        <?php endif; ?>
-    </aside>
+    <!-- Wadah Daftar Tugas -->
+    <div id="todo-list" class="todo-list">
+        <p class="loading-text">Belum ada daftar tugas 🙌🏻</p>
+    </div>
 </div>

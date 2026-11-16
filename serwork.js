@@ -1,4 +1,4 @@
-const CACHE_NAME = 'todo-app-ch';
+const CACHE_NAME = 'todo-app-ch2';
 const ASSETS_TO_CACHE = [
     './',
     './index.php',
@@ -30,6 +30,11 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
+    if (event.request.url.includes('api.php') || event.request.method !== 'GET') {
+        event.respondWith(fetch(event.request));
+        return;
+    }
+
     event.respondWith(
         fetch(event.request)
             .then((response) => {
