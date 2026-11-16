@@ -68,7 +68,6 @@ function scheduleTodoNotifications(todos) {
         if (!registration.active) return;
 
         todos.forEach(todo => {
-            // Lewati jika sudah Done atau tidak ada waktu deadline
             if (todo.status === 'Done!' || !todo.notify_time) return;
 
             const formattedDeadline = todo.notify_time.replace(' ', 'T');
@@ -81,7 +80,6 @@ function scheduleTodoNotifications(todos) {
             const delayWarning = warningTime - now;
             const delayExact = targetTime - now;
 
-            // Reminder 3 jam sebelum deadline
             if (delayWarning > 0) {
                 registration.active.postMessage({
                     type: 'SCHEDULE_NOTIFICATION',
@@ -91,7 +89,6 @@ function scheduleTodoNotifications(todos) {
                 });
             }
 
-            // Reminder saat deadline tiba
             if (delayExact > 0) {
                 registration.active.postMessage({
                     type: 'SCHEDULE_NOTIFICATION',
@@ -107,6 +104,7 @@ function scheduleTodoNotifications(todos) {
 // RESTFUL API CRUD Operations
 const API_URL = './api.php';
 const API_KEY = "Piw's Todo App";
+let currentTodos = [];
 
 const apiHeaders = {
     'Content-Type': 'application/json',
@@ -115,7 +113,7 @@ const apiHeaders = {
 
 function getCurrentCategory() {
     const params = new URLSearchParams(window.location.search);
-    return params.get('category') || '';
+    return params.get('category') || 'Personal';
 }
 
 // GET: Ambil seluruh daftar tugas dari api.php
@@ -124,7 +122,10 @@ async function loadTodos() {
     if (!listContainer) return;
 
     const category = getCurrentCategory();
-    const url = category ? `${API_URL}?category=${encodeURIComponent(category)}` : API_URL;
+    const heading = document.getElementById('category-heading');
+    if (heading) heading.textContent = `${category} Tasks`;
+
+    const url = `${API_URL}?category=${encodeURIComponent(category)}`;
 
     try {
         const res = await fetch(url, { method: 'GET', headers: apiHeaders });
@@ -132,56 +133,45 @@ async function loadTodos() {
 
         if (!res.ok) throw new Error(result.message || 'Gagal memuat data');
 
-        renderTodos(result.data);
-        scheduleTodoNotifications(result.data); // Jadwalkan notif dari data API
+        currentTodos = result.data;
+        renderTodos(currentTodos);
+        scheduleTodoNotifications(currentTodos);
     } catch (err) {
-        listContainer.innerHTML = `<p class="error-text">Error: ${err.message}</p>`;
+        listContainer.innerHTML = `<li class="todo-item"><p>Error: ${err.message}</p></li>`;
     }
 }
 
-// Render daftar tugas ke dalam HTML
+// Render daftar tugas sesuai struktur style.css asli
 function renderTodos(todos) {
     const listContainer = document.getElementById('todo-list');
     if (!todos || todos.length === 0) {
-        listContainer.innerHTML = `<p class="empty-text">Belum ada daftar tugas🙌🏻</p>`;
+        listContainer.innerHTML = `<li class="todo-item"><p>Belum ada daftar tugas 🙌🏻</p></li>`;
         return;
     }
 
     listContainer.innerHTML = todos.map(todo => `
-        <div class="todo-item ${todo.status === 'Done' ? 'completed' : ''}" data-id="${todo.id}" data-title="${escapeHTML(todo.title)}" data-notify="${escapeHTML(todo.notify_time || '')}">
-            <div class="todo-content">
-                <div class="todo-header">
-                    <span class="badge badge-${todo.category.toLowerCase()}">${escapeHTML(todo.category)}</span>
-                    <h3>${escapeHTML(todo.title)}</h3>
-                </div>
+        <li class="todo-item ${todo.status === 'Done!' ? 'completed' : ''}" data-id="${todo.id}">
+            <div>
+                <h4>${escapeHTML(todo.title)}</h4>
                 ${todo.description ? `<p>${escapeHTML(todo.description)}</p>` : ''}
-                ${todo.notify_time ? `<small>⏰ ${escapeHTML(todo.notify_time)}</small>` : ''}
+                <p>Status: <b>${escapeHTML(todo.status)}</b>${todo.notify_time ? ` | ⏰ ${escapeHTML(todo.notify_time)}` : ''}</p>
             </div>
             <div class="todo-actions">
-                <select onchange="changeStatus(${todo.id}, this.value)" title="Ubah Status">
-                    <option value="Unfinished" ${todo.status === 'Unfinished' ? 'selected' : ''}>Unfinished</option>
-                    <option value="In Progress" ${todo.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
-                    <option value="Done" ${todo.status === 'Done' ? 'selected' : ''}>Done!</option>
-                </select>
-                <button onclick="editTodo(${todo.id}, '${escapeHTML(todo.title)}', '${escapeHTML(todo.description || '')}')" title="Edit">
-                    ✏️
-                </button>
-                <button onclick="deleteTodo(${todo.id})" title="Hapus">
-                    🗑️
-                </button>
+                <a href="javascript:void(0)" class="btn-edit" onclick="openEditor(${todo.id})">Edit</a>
+                <a href="javascript:void(0)" class="btn-delete" onclick="deleteTodo(${todo.id})">Delete</a>
             </div>
-        </div>
+        </li>
     `).join('');
 }
 
-// POST: Tambah tugas baru
+// POST: Tambah tugas baru (kategori otomatis mengikuti sidebar kiri)
 document.getElementById('todo-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
 
     const payload = {
         title: document.getElementById('todo-title').value,
         description: document.getElementById('todo-desc').value,
-        category: document.getElementById('todo-category').value,
+        category: getCurrentCategory(),
         notify_time: document.getElementById('todo-notify').value || null
     };
 
@@ -205,33 +195,39 @@ document.getElementById('todo-form')?.addEventListener('submit', async (e) => {
     }
 });
 
-// PATCH: Ubah status (Unfinished / In Progress / Done)
-async function changeStatus(id, newStatus) {
-    try {
-        const res = await fetch(`${API_URL}?id=${id}`, {
-            method: 'PATCH',
-            headers: apiHeaders,
-            body: JSON.stringify({ status: newStatus })
-        });
-        if (res.ok) loadTodos();
-    } catch (err) {
-        console.error(err);
-    }
+// Buka Panel Kanan untuk Edit Tugas
+function openEditor(id) {
+    const todo = currentTodos.find(t => Number(t.id) === Number(id));
+    if (!todo) return;
+
+    document.getElementById('editor-placeholder').style.display = 'none';
+    const editForm = document.getElementById('edit-form');
+    editForm.style.display = 'flex';
+
+    document.getElementById('edit-id').value = todo.id;
+    document.getElementById('edit-title').value = todo.title;
+    document.getElementById('edit-desc').value = todo.description || '';
+    document.getElementById('edit-status').value = todo.status || 'Unfinished';
+    document.getElementById('edit-notify').value = todo.notify_time ? todo.notify_time.replace(' ', 'T').slice(0, 16) : '';
 }
 
-// PUT: Edit judul dan deskripsi tugas
-async function editTodo(id, oldTitle, oldDesc) {
-    const newTitle = prompt('Edit Judul Tugas:', oldTitle);
-    if (newTitle === null) return;
+// PUT: Simpan perubahan dari Panel Kanan
+document.getElementById('edit-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
 
-    const newDesc = prompt('Edit Deskripsi Tugas:', oldDesc);
-    if (newDesc === null) return;
+    const id = document.getElementById('edit-id').value;
+    const payload = {
+        title: document.getElementById('edit-title').value,
+        description: document.getElementById('edit-desc').value,
+        status: document.getElementById('edit-status').value,
+        notify_time: document.getElementById('edit-notify').value || null
+    };
 
     try {
         const res = await fetch(`${API_URL}?id=${id}`, {
             method: 'PUT',
             headers: apiHeaders,
-            body: JSON.stringify({ title: newTitle, description: newDesc })
+            body: JSON.stringify(payload)
         });
         const result = await res.json();
 
@@ -239,15 +235,18 @@ async function editTodo(id, oldTitle, oldDesc) {
             alert(`Gagal (${res.status}): ${result.message}`);
             return;
         }
+
+        document.getElementById('edit-form').style.display = 'none';
+        document.getElementById('editor-placeholder').style.display = 'block';
         loadTodos();
     } catch (err) {
         alert('Gagal memperbarui tugas.');
     }
-}
+});
 
-// DELETE: Hapus tugas
+// DELETE: Hapus tugas (dari list maupun dari panel kanan)
 async function deleteTodo(id) {
-    if (!confirm('Yakin mau hapus?')) return;
+    if (!confirm('Yakin ingin menghapus tugas ini?')) return;
 
     try {
         const res = await fetch(`${API_URL}?id=${id}`, {
@@ -260,10 +259,20 @@ async function deleteTodo(id) {
             alert(`Gagal (${res.status}): ${result.message}`);
             return;
         }
+
+        if (document.getElementById('edit-id').value == id) {
+            document.getElementById('edit-form').style.display = 'none';
+            document.getElementById('editor-placeholder').style.display = 'block';
+        }
         loadTodos();
     } catch (err) {
         alert('Gagal menghapus tugas.');
     }
+}
+
+function deleteFromEditor() {
+    const id = document.getElementById('edit-id').value;
+    if (id) deleteTodo(id);
 }
 
 // Helper keamanan mencegah XSS
@@ -273,5 +282,4 @@ function escapeHTML(str) {
     return div.innerHTML;
 }
 
-// Muat daftar tugas dari REST API saat halaman siap
 document.addEventListener('DOMContentLoaded', loadTodos);
